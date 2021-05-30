@@ -1,20 +1,16 @@
 <template>
   <div id="app">
-    <Cabecera/>
+    <Header/>
     <router-view></router-view>
   </div>
 </template>
 
 <script>
-import Cabecera from "./components/Cabecera.vue"
-// import axios from 'axios'
-
-
+import Header from './components/header.vue'
 export default {
   name: 'App',
-  
   components: {
-    Cabecera
+    Header
   }
 }
 </script>
