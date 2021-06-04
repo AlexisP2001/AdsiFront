@@ -4,7 +4,7 @@
       <template>
   <v-data-table class="mx-auto mt-5 elevation-15" max-width="900"
     :headers="columnas"
-    :items="articulos"
+    :items="categorias"
     :search="search"
     sort-by="calories"
   >
@@ -33,7 +33,7 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
-              to="/crear"
+              to="/crearCategoria"
               color="primary"
               dark
               class="mb-2"
@@ -57,19 +57,19 @@
         </v-dialog>
       </v-toolbar>
     </template>
-    <template v-slot:item.actions="{ item }">
+    <template v-slot:[`item.actions`]="{ item }">
       <v-icon
         small
         class="mr-2"
         @click="editItem(item)"
       >
-        mdi-{{icons[8]}}
+        mdi-{{icons[0]}}
       </v-icon>
       <v-icon
         small
         @click="deleteItem(item)"
       >
-        mdi-{{icons[9]}}
+        mdi-{{icons[1]}}
       </v-icon>
     </template>
     <template v-slot:no-data>
@@ -90,49 +90,38 @@
 <script>
 import axios from 'axios'
   export default {
-    data: () => ({
-      icons: ['home','shopping','sitemap','cart','chart-line','account','account-multiple','logout','pencil','delete'],
+    data: () => ({      
+      icons: ['pencil','delete'],
       drawer:false,
       search: '',
 
       dialog: false,
       dialogDelete: false,
       columnas: [
-        { text: 'ID', value: 'id',},
         { text: 'Nombre', value: 'nombre' },
         { text: 'Descripcion', value: 'descripcion' },
+        { text: 'Estado', value: 'estado' },
         { text: 'Actions', value: 'actions', sortable: false }
       ],
-      articulos: [
-        {id:1,
-        nombre:'Televisor',
-        descripcion:'Televisores'},
-
-        {id:2,
-        nombre:'Tablet',
-        descripcion:'Tablets'},
-
-        {id:3,
-        nombre:'Iphone',
-        descripcion:'Celulares'},
+      categorias: [
+        {estado:'',
+        nombre:'',
+        descripcion:''}
       ],
       editedIndex: -1,
       editedItem: {
-        id: '',
+        estado:'',
         nombre: '',
         Descripcion: '',
       },
       defaultItem: {
-        id: '',
+        estado:'',
         nombre: '',
         Descripcion: ''
       },
     }),
     created(){
-      axios.get('/categoria').then(response => {
-        this.categorias = response.data;
-        console.log(this.articulos);
-      })
+      this.obtenerCategorias();
     },
 
     computed: {
@@ -151,12 +140,14 @@ import axios from 'axios'
     },
     methods: {
       obtenerCategorias(){
-        axios.get('/articulo')
-        .then(respuesta =>{
-          this.categorias = respuesta.data
+        let header = {headers:{"token" : this.$store.state.token}};
+        axios.get("categoria",header)
+        .then(response =>{
+          console.log(response);
+          this.categorias = response.data.categoria
         })
-        .catch(function(error){
-          console.log(error);
+        .catch((error) =>{
+          console.log(error.response);
         })
       },
 

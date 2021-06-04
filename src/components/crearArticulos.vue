@@ -46,7 +46,7 @@
           required>
           </v-text-field>
           <v-card-actions>
-            <v-btn to="/articulos" color="blue-grey" class="mr-4">Cancelar</v-btn>
+            <v-btn to="/articulo" color="blue-grey" class="mr-4">Cancelar</v-btn>
             <v-btn type="submit" color="indigo" class="mr-4">Guardar</v-btn>
           </v-card-actions>
         </form>
@@ -56,9 +56,37 @@
 </template>
 
 <script>
-// let url = 'https://proyectosemilla.herokuapp.com/api/articulo';
-// import axios from 'axios'
+let url = 'https://adsi2067725v1.herokuapp.com/api/articulo';
+import axios from 'axios'
 export default {
-  
+  name:'crearArticulo',
+  data(){
+    return{
+      articulo:{
+        codigo:'',
+        nombre:'',
+        descripcion:'',
+        precio:'',
+        stock:''
+
+        
+
+      }
+    }
+  },
+  methods: {
+    guardarArticulo(){
+      let router = this.$router;
+      console.log(router);
+      let params = this.articulo
+      axios.post(url, params)
+      .then(()=>{
+        router.push('/articulo')
+      })
+      .catch(()=>{
+        console.log()
+      })
+    }
+  },
 }
 </script>

@@ -7,20 +7,17 @@ import personas from '../components/personas.vue';
 import usuarios from '../components/usuarios.vue';
 import registrarse from '../components/registrarse.vue';
 import crearArticulos from '../components/crearArticulos.vue';
-import eliminarArticulos from '../components/eliminarArticulos.vue';
-import editarArticulos from '../components/editarArticulos.vue';
-
+import crearCategoria from '../components/crearCategoria.vue'
 
 export const routes = [
-    {path:'/compras',component: compras},
-    {path:'/ventas',component: ventas},
-    {path:'/articulos',component:articulos},
+    {path:'/compra',component: compras},
+    {path:'/venta',component: ventas},
+    {path:'/articulo',component:articulos},
     {path:'/login',component: login},
-    {path:'/categorias',component: categorias},
-    {path:'/personas',component: personas},
+    {path:'/categoria',component: categorias},
+    {path:'/crearCategoria',component: crearCategoria},
+    {path:'/persona',component: personas},
     {path:'/registrarse',component: registrarse},
-    {path:'/usuarios',component: usuarios},
+    {path:'/usuario',component: usuarios},
     {path:'/crearArticulo',component: crearArticulos},
-    {path:'/editar',component: editarArticulos},
-    {path:'/eliminar',component: eliminarArticulos}
 ]

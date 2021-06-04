@@ -3,7 +3,7 @@
         <!-- <v-app-bar app color="#17A589">
             <v-toolbar-title>Ingreso</v-toolbar-title>
         </v-app-bar> -->
-        <v-content>
+        <v-main>
             <v-card width="500" class="mx-auto mt-9">
                 <v-card-title>Ingreso de Usuario</v-card-title>
                 <v-card-text>
@@ -31,7 +31,7 @@
                     <v-btn  @click="login()" color="info">Ingresar</v-btn>
                 </v-card-actions>
             </v-card>
-        </v-content>
+        </v-main>
         <template>
   <v-footer
     dark
@@ -76,8 +76,6 @@ export default {
         this.$store.dispatch("setToken", response.data.token);
         this.$router.push("/ventas");
         console.log('token' + response.data.token);
-        console.log(this.email);
-        console.log(this.pass);
         return console.log(response);
       }).catch((error)=>{
         this.mensajeError=true

@@ -12,7 +12,7 @@
       <v-toolbar
         flat
       >
-        <v-toolbar-title>Inventario</v-toolbar-title>
+        <v-toolbar-title>Articulos</v-toolbar-title>
         <v-spacer></v-spacer>
       <v-text-field
         v-model="search"
@@ -33,7 +33,7 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
-              to="/crearArticulo"
+              to="/crearCategoria"
               color="primary"
               dark
               class="mb-2"
@@ -57,29 +57,29 @@
         </v-dialog>
       </v-toolbar>
     </template>
-    <template v-slot:item.actions="{ item }">
+    <template v-slot:[`item.actions`]="{ item }">
       <v-icon
         small
         class="mr-2"
         @click="editItem(item)"
       >
-        mdi-{{icons[8]}}
+        mdi-{{icons[0]}}
       </v-icon>
       <v-icon
         small
         @click="deleteItem(item)"
       >
-        mdi-{{icons[9]}}
+        mdi-{{icons[1]}}
       </v-icon>
     </template>
-    <template v-slot:no-data>
+    <!-- <template v-slot:no-data>
       <v-btn
         color="primary"
         @click="initialize"
       >
         Reset
       </v-btn>
-    </template>
+    </template> -->
   </v-data-table>
 </template>
     </v-container>
@@ -90,61 +90,50 @@
 <script>
 import axios from 'axios'
   export default {
-    data: () => ({
-      icons: ['home','shopping','sitemap','cart','chart-line','account','account-multiple','logout','pencil','delete'],
+    data: () => ({      
+      icons: ['pencil','delete'],
       drawer:false,
       search: '',
 
       dialog: false,
       dialogDelete: false,
       columnas: [
-        { text: 'ID', value: 'id',},
+        { text: 'Codigo', value: 'codigo' },
         { text: 'Nombre', value: 'nombre' },
+        { text: 'Descripcion', value: 'descripcion' },
+        { text: 'Precio', value: 'precioventa' },
         { text: 'Stock', value: 'stock' },
-        { text: 'Categoria', value: 'categoria' },
-        { text: 'Precio', value: 'precio' },
+        { text: 'Estado', value: 'estado' },
         { text: 'Actions', value: 'actions', sortable: false }
       ],
       articulos: [
-        {id:1,
-        nombre:'Televisor',
-        stock:15,
-        categoria:'Televisores',
-        precio:1500},
-
-        {id:2,
-        nombre:'Tablet',
-        stock:21,
-        categoria:'Tablets',
-        precio:1800},
-
-        {id:3,
-        nombre:'Iphone',
-        stock:18,
-        categoria:'Celulares',
-        precio:2000},
+        {estado:'1',
+        codigo:'11',
+        precioventa:'1111',
+        stock:'1111',
+        nombre:'asdas',
+        descripcion:'asdasd'},  
       ],
       editedIndex: -1,
       editedItem: {
-        id: '',
-        nombre: '',
-        stock: 0,
-        categoria: '',
-        precio: 0,
+        estado:'',
+        precioventa:'',
+        codigo:'',
+        stock:'',
+        nombre:'',
+        descripcion:'',
       },
       defaultItem: {
-        id: '',
-        nombre: '',
-        stock: 0,
-        categoria: '',
-        precio: 0,
+        estado:'',
+        precioventa:'',
+        codigo:'',
+        stock:'',
+        nombre:'',
+        descripcion:''
       },
     }),
     created(){
-      axios.get('/articulo').then(response => {
-        this.articulos = response.data;
-        console.log(this.articulos);
-      })
+      this.obtenerArticulos();
     },
 
     computed: {
@@ -163,19 +152,21 @@ import axios from 'axios'
     },
     methods: {
       obtenerArticulos(){
-        axios.get('/articulo')
-        .then(respuesta =>{
-          this.articulos = respuesta.data
+        let header = {headers:{"token" : this.$store.state.token}};
+        axios.get("articulo",header)
+        .then(response =>{
+          console.log(response);
+          this.articulos = response.data.articulos
         })
-        .catch(function(error){
-          console.log(error);
+        .catch((error) =>{
+          console.log(error.response);
         })
       },
 
       confirmarBorrado(){
         axios.delete('/articulo/id')//+id)
         .then(()=>{
-          this.obtenerArticulos();
+          this.obtenerCategorias();
           this.dialog=false;
           this.snackbar = true
         })
