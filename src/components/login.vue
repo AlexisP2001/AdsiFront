@@ -7,18 +7,8 @@
         <v-card width="500" class="mx-auto mt-9">
           <v-card-title>Ingreso de Usuario</v-card-title>
           <v-card-text>
-            <v-text-field v-model="email" 
-                    class="form-input"
-                    label="Usuario" 
-                    required
-                    prepend-icon="mdi-account-circle"/>
-
-
-            <v-text-field v-model="pass"
-                    class="form-input"
-                    required
-                    placeholder="Contraseña" 
-                    :type=" mostrarContraseña ? 'text' : 'password'"
+            <v-text-field v-model="email" class="form-input" label="Usuario"  required prepend-icon="mdi-account-circle"/>
+            <v-text-field v-model="pass" class="form-input" required placeholder="Contraseña"  :type=" mostrarContraseña ? 'text' : 'password'" 
                     prepend-icon="mdi-lock"
                     :append-icon="mostrarContraseña ? 'mdi-eye' : 'mdi-eye-off'"
                     @click:append="mostrarContraseña =! mostrarContraseña"/>
@@ -63,11 +53,15 @@
     methods:{
       login(){
         axios.post("usuario/login",{email:this.email, password:this.pass})
+        //axios.post("usuario/login",{email:this.email, password:this.pass})
         .then(response =>{
+          console.log(response);
           this.$store.dispatch("setToken", response.data.token);
-          this.$router.push("/ventas");
-          console.log('token' + response.data.token);
-          return console.log(response);
+          this.$router.push("/venta");
+          console.log("setToken" + response.data.token);
+          return console.log(this.$store);
+          
+          //return console.log(response);
         }).catch((error)=>{
           this.mensajeError=true
           console.log(error.response.data.msg);

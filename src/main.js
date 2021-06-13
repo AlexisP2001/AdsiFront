@@ -9,6 +9,8 @@ Vue.use(VueRouter);
 Vue.config.productionTip = false
 
 axios.defaults.baseURL="https://adsi2067725v1.herokuapp.com/api/"
+//axios.defaults.baseURL="https://proyectosemilla.herokuapp.com/api/"
+//axios.defaults.baseURL="https://localhost:27017/api/"
 
 const router = new VueRouter({
   // en este bloque escribimos las rutas
