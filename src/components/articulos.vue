@@ -33,7 +33,7 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
-              to="/crearCategoria"
+              to="/crearArticulo"
               color="primary"
               dark
               class="mb-2"
@@ -98,24 +98,25 @@ import axios from 'axios'
       dialog: false,
       dialogDelete: false,
       columnas: [
+        // { text: 'Categoria', value: 'categoria' },
         { text: 'Codigo', value: 'codigo' },
         { text: 'Nombre', value: 'nombre' },
         { text: 'Descripcion', value: 'descripcion' },
         { text: 'Precio', value: 'precioventa' },
         { text: 'Stock', value: 'stock' },
-        { text: 'Estado', value: 'estado' },
         { text: 'Actions', value: 'actions', sortable: false }
       ],
       articulos: [
-        {estado:'1',
-        codigo:'11',
-        precioventa:'1111',
-        stock:'1111',
-        nombre:'asdas',
-        descripcion:'asdasd'},  
+        {categoria:'',
+        codigo:'',
+        precioventa:'',
+        stock:'',
+        nombre:'',
+        descripcion:''},  
       ],
       editedIndex: -1,
       editedItem: {
+        categoria:'',
         estado:'',
         precioventa:'',
         codigo:'',
@@ -124,6 +125,7 @@ import axios from 'axios'
         descripcion:'',
       },
       defaultItem: {
+        categoria:'',
         estado:'',
         precioventa:'',
         codigo:'',
@@ -175,9 +177,14 @@ import axios from 'axios'
         })
       },
       editItem (item) {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
+        console.log(item);
+        this.bsd = 1;
+        this.od = item._id;
+        this.editedItem.nombre = item.nombre;
+        this.editedItem.descripcion = item.descripcion;
+        this.editedItem.descripcion = item.descripcion;
         this.dialog = true
+
       },
 
       deleteItem (item) {

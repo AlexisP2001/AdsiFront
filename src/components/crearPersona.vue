@@ -1,6 +1,13 @@
 <template>
 <v-card width="500" class="mx-auto mt-9">
   <v-card-text>
+    <v-autocomplete
+      v-model="tipoPersona"
+      :items="items"
+      dense
+      filled
+      label="Seleccione Tipo"
+    ></v-autocomplete>
     <v-text-field
       v-model="nombre"
       :counter="20"
@@ -8,8 +15,28 @@
       required
     ></v-text-field>
     <v-text-field
-      v-model="descripcion"
-      label="Descripcion"
+      v-model="tipoDocumento"
+      label="Tipo de Documento"
+      required
+    ></v-text-field>
+    <v-text-field
+      v-model="numDocumento"
+      label="Número de Documento"
+      required
+    ></v-text-field>
+    <v-text-field
+      v-model="direccion"
+      label="Dirección"
+      required
+    ></v-text-field>
+    <v-text-field
+      v-model="telefono"
+      label="Telefono"
+      required
+    ></v-text-field>
+    <v-text-field
+      v-model="email"
+      label="Email"
       required
     ></v-text-field>
     <v-btn
@@ -29,7 +56,7 @@
     <v-btn 
     color="error"
     class="mr-4"
-    to="/categoria">
+    to="/persona">
       Cancelar
     </v-btn>
   </v-card-text>    
@@ -41,8 +68,13 @@ import axios from 'axios'
   export default {
       data: () => ({
       nombre: '',
-      descripcion: '',
-      checkbox: false,
+      tipoDocumento: '',
+      numDocumento : '',
+      direccion : '',
+      telefono: '',
+      email: '',
+      select:'null',
+      items: ['Proveedor', 'Cliente'],
     }),
 
     computed: {
@@ -62,8 +94,12 @@ import axios from 'axios'
       },
       limpiar () {
         this.nombre = ''
-        this.descripcion = ''
-        this.estado = null
+        this.tipoPersona = null
+        this.tipoDocumento = ''
+        this.numDocumento = ''
+        this.direccion = ''
+        this.telefono = ''
+        this.email = ''
       },
     },
   }

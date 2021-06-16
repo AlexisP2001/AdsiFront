@@ -1,8 +1,8 @@
 <template>
   <v-container>
     <v-row>
-      <v-col class="mb-4">
-        <h1 class="display-2 font-weight-bold mb-3">Creacion de articulo</h1>
+      <v-col>
+        <h5 class="display-1 font-weight-bold">Articulo Nuevo</h5>
       </v-col>
     </v-row>
     <v-row>
@@ -46,8 +46,8 @@
           required>
           </v-text-field>
           <v-card-actions>
-            <v-btn to="/articulo" color="blue-grey" class="mr-4">Cancelar</v-btn>
-            <v-btn type="submit" color="indigo" class="mr-4">Guardar</v-btn>
+            <v-btn to="/articulo" color="error" class="mr-4">Cancelar</v-btn>
+            <v-btn type="submit" color="success" @click="guardar()" class="mr-4">Guardar</v-btn>
           </v-card-actions>
         </form>
       </v-col>
@@ -86,7 +86,14 @@ export default {
       .catch(()=>{
         console.log()
       })
-    }
+    },
+    // guardar(){
+    //   if (this.bd == 0){
+
+    //   }else{
+
+    //   }
+    // }
   },
 }
 </script>

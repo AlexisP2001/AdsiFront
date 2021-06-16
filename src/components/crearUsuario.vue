@@ -49,7 +49,7 @@
     <v-card-actions>
     <v-btn color="success" class="mr-4" @click="registrarse" >Registrarse</v-btn>
     <v-btn color="info" @click="reset"> Limpiar</v-btn>
-    <v-btn color="error" to="/login"> Cancelar</v-btn>
+    <v-btn color="error" to="/usuario"> Cancelar</v-btn>
 
     </v-card-actions>
 
