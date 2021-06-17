@@ -67,9 +67,16 @@
       </v-icon>
       <v-icon
         small
-        @click="deleteItem(item)"
+        class="mr-2"
+        @click="activarItem(item)"
       >
         mdi-{{icons[1]}}
+      </v-icon>
+      <v-icon
+        small
+        @click="desactivarItem(item)"
+      >
+        mdi-{{icons[2]}}
       </v-icon>
     </template>
     <!-- <template v-slot:no-data>
@@ -91,7 +98,7 @@
 import axios from 'axios'
   export default {
     data: () => ({      
-      icons: ['pencil','delete'],
+      icons: ['pencil','check','block-helper'],
       drawer:false,
       search: '',
 

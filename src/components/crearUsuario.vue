@@ -18,7 +18,7 @@
 
     <v-col cols="12">
     <v-text-field 
-    v-model="name" 
+    v-model="nombre" 
     :counter="10" 
     label="Nombre"
     required 
@@ -47,7 +47,7 @@
     
 
     <v-card-actions>
-    <v-btn color="success" class="mr-4" @click="registrarse" >Registrarse</v-btn>
+    <v-btn color="success" class="mr-4" @click="añadirUsuario" >Registrarse</v-btn>
     <v-btn color="info" @click="reset"> Limpiar</v-btn>
     <v-btn color="error" to="/usuario"> Cancelar</v-btn>
 
@@ -88,7 +88,7 @@ import axios from 'axios'
     data() {
         return {
           rol:'',
-          name:'',
+          nombre:'',
           email:'',
             items: ['ALMACENISTA_ROL', 'VENDEDOR_ROL', 'ADMIN_ROL'],
             value: null,
@@ -97,12 +97,12 @@ import axios from 'axios'
         }
     },
     methods:{
-      registrarse(){
+      añadirUsuario(){
         let header = {headers:{"token" : this.$store.state.token}};
-        axios.post("usuario",header)
+        axios.post("usuario",{header,rol:this.rol,nombre:this.nombre,email:this.email,password:this.password})
         .then(response =>{
           console.log(response);
-          this.ventas = response.data.usuario
+          this.usuario = response.data.usuario
         })
         .catch((error) =>{
           console.log(error.response);
