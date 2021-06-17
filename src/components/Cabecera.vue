@@ -5,15 +5,18 @@
     absolute
     temporary
     bottom> 
-    <v-list>
-    <v-list-item :to="{path:'/articulo'}">
+    <v-list v-if="this.$store.state.token != ''">
+      <template v-if="this.$store.state.rol =='ADMIN_ROL' || this.$store.state.rol =='ALMACENISTA_ROL'">
+        <v-list-item :to="{path:'/articulo'}">
       <v-list-item-action>
         <v-icon>mdi-{{icons[1]}}</v-icon>
       </v-list-item-action>
       <v-list-item-content>
         <v-list-item-title>Articulos</v-list-item-title>
       </v-list-item-content>
-    </v-list-item>
+    </v-list-item>          
+      </template>
+    
 
     <v-list-item :to="{path:'/categoria'}">
     <v-list-item-action>

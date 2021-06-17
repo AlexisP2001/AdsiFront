@@ -74,6 +74,7 @@ export default {
       axios.post("usuario/login",{email:this.email, password:this.pass})
       .then(response =>{
         this.$store.dispatch("setToken", response.data.token);
+        this.$store.dispatch("setRol", response.data.usuario.rol);
         this.$router.push("/venta");
         console.log('token' + response.data.token);
         return console.log(response);

@@ -58,26 +58,30 @@
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
-      <v-icon
+          <v-icon
         small
         class="mr-2"
         @click="editItem(item)"
       >
         mdi-{{icons[0]}}
       </v-icon>
+      <template v-if="item.estado">
       <v-icon
         small
         class="mr-2"
-        @click="activarItem(item)"
-      >
-        mdi-{{icons[1]}}
-      </v-icon>
-      <v-icon
-        small
-        @click="desactivarItem(item)"
+        @click="activarDesactivarItem(2,item)"
       >
         mdi-{{icons[2]}}
       </v-icon>
+      </template>
+      <template v-else>
+      <v-icon
+        small
+        @click="activarDesactivarItem(1,item)"
+      >
+        mdi-{{icons[1]}}
+      </v-icon>
+      </template>
     </template>
     <!-- <template v-slot:no-data>
       <v-btn
@@ -111,6 +115,7 @@ import axios from 'axios'
         { text: 'Descripcion', value: 'descripcion' },
         { text: 'Precio', value: 'precioventa' },
         { text: 'Stock', value: 'stock' },
+        { text: 'Estado', value: 'estado' },
         { text: 'Actions', value: 'actions', sortable: false }
       ],
       articulos: [
@@ -119,6 +124,7 @@ import axios from 'axios'
         precioventa:'',
         stock:'',
         nombre:'',
+        estado:'',
         descripcion:''},  
       ],
       editedIndex: -1,
@@ -171,38 +177,36 @@ import axios from 'axios'
           console.log(error.response);
         })
       },
-
-      confirmarBorrado(){
-        axios.delete('/articulo/id')//+id)
-        .then(()=>{
-          this.obtenerCategorias();
-          this.dialog=false;
-          this.snackbar = true
-        })
-        .catch(function(error){
-          console.log(error);
-        })
-      },
-      editItem (item) {
-        console.log(item);
-        this.bsd = 1;
-        this.od = item._id;
-        this.editedItem.nombre = item.nombre;
-        this.editedItem.descripcion = item.descripcion;
-        this.editedItem.descripcion = item.descripcion;
-        this.dialog = true
-
-      },
-
-      deleteItem (item) {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialogDelete = true
-      },
-
-      deleteItemConfirm () {
-        this.desserts.splice(this.editedIndex, 1)
-        this.closeDelete()
+        activarDesactivarItem (accion , item) {
+        let id = item._id;
+        console.log(accion);
+        if(accion == 2){
+          console.log(id);
+          let me = this
+          let header = {headers:{"token" : this.$store.state.token}};
+          axios.put(`articulo/desactivar/${id}`,
+          {estado:0},
+          header)
+          .then(function(){
+            me.obtenerArticulos();
+          })
+          .catch(function(error){
+            console.log(error);
+          });
+        }else if (accion==1){
+          console.log(id);
+          let me = this
+          let header = {headers:{"token" : this.$store.state.token}};
+          axios.put(`articulo/activar/${id}`,
+          {estado:1},
+          header)
+          .then(function(){
+            me.obtenerArticulos();
+          })
+          .catch(function(error){
+            console.log(error);
+          });
+        }
       },
 
       close () {

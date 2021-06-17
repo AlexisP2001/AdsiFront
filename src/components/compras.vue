@@ -57,27 +57,31 @@
         </v-dialog>
       </v-toolbar>
     </template>
-    <template v-slot:[`item.actions`]="{ item }">
-      <v-icon
+   <template v-slot:[`item.actions`]="{ item }">
+          <v-icon
         small
         class="mr-2"
         @click="editItem(item)"
       >
         mdi-{{icons[0]}}
       </v-icon>
+      <template v-if="item.estado">
       <v-icon
         small
         class="mr-2"
-        @click="activarItem(item)"
-      >
-        mdi-{{icons[1]}}
-      </v-icon>
-      <v-icon
-        small
-        @click="desactivarItem(item)"
+        @click="activarDesactivarItem(2,item)"
       >
         mdi-{{icons[2]}}
       </v-icon>
+      </template>
+      <template v-else>
+      <v-icon
+        small
+        @click="activarDesactivarItem(1,item)"
+      >
+        mdi-{{icons[1]}}
+      </v-icon>
+      </template>
     </template>
     <!-- <template v-slot:no-data>
       <v-btn
@@ -177,34 +181,36 @@ import axios from 'axios'
         .catch((error) =>{
           console.log(error.response);
         })
-      },
-
-      confirmarBorrado(){
-        axios.delete('/compra/id')//+id)
-        .then(()=>{
-          this.obtenerVentas();
-          this.dialog=false;
-          this.snackbar = true
-        })
-        .catch(function(error){
-          console.log(error);
-        })
-      },
-      editItem (item) {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialog = true
-      },
-
-      deleteItem (item) {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialogDelete = true
-      },
-
-      deleteItemConfirm () {
-        this.desserts.splice(this.editedIndex, 1)
-        this.closeDelete()
+      }, activarDesactivarItem (accion , item) {
+        let id = item._id;
+        console.log(accion);
+        if(accion == 2){
+          console.log(id);
+          let me = this
+          let header = {headers:{"token" : this.$store.state.token}};
+          axios.put(`compra/desactivar/${id}`,
+          {estado:0},
+          header)
+          .then(function(){
+            me.obtenerCompras();
+          })
+          .catch(function(error){
+            console.log(error);
+          });
+        }else if (accion==1){
+          console.log(id);
+          let me = this
+          let header = {headers:{"token" : this.$store.state.token}};
+          axios.put(`compra/activar/${id}`,
+          {estado:1},
+          header)
+          .then(function(){
+            me.obtenerCompras();
+          })
+          .catch(function(error){
+            console.log(error);
+          });
+        }
       },
 
       close () {

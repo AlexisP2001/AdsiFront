@@ -47,37 +47,35 @@
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="headline">¿Esta segudo de eliminar el usuario?</v-card-title>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="closeDelete">Cancelar</v-btn>
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm">Confirmar</v-btn>
-              <v-spacer></v-spacer>
-            </v-card-actions>
           </v-card>
         </v-dialog>
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
-      <v-icon
+          <v-icon
         small
         class="mr-2"
         @click="editItem(item)"
       >
         mdi-{{icons[0]}}
       </v-icon>
+      <template v-if="item.estado">
       <v-icon
         small
         class="mr-2"
-        @click="activarItem(item)"
-      >
-        mdi-{{icons[1]}}
-      </v-icon>
-      <v-icon
-        small
-        @click="desactivarItem(item)"
+        @click="activarDesactivarItem(2,item)"
       >
         mdi-{{icons[2]}}
       </v-icon>
+      </template>
+      <template v-else>
+      <v-icon
+        small
+        @click="activarDesactivarItem(1,item)"
+      >
+        mdi-{{icons[1]}}
+      </v-icon>
+      </template>
     </template>
     <!-- <template v-slot:no-data>
       <v-btn
@@ -106,28 +104,28 @@ import axios from 'axios'
       columnas: [
         { text: 'Nombre', value: 'nombre' },
         { text: 'Email', value: 'email' },
-        // { text: 'Password', value: 'password' },
         { text: 'Rol', value: 'rol' },
+        { text: 'Estado', value: 'estado' },
         { text: 'Actions', value: 'actions', sortable: false }
       ],
       usuarios: [
         {
         nombre:'',
         email:'',
-        password:'',
+        estado:'',
         rol:''},  
       ],
       editedIndex: -1,
       editedItem: {
         nombre:'',
         email:'',
-        password:'',
+        estado:'',
         rol:''
       },
       defaultItem: {
         nombre:'',
         email:'',
-        password:'',
+        estado:'',
         rol:''
       },
     }),
@@ -173,21 +171,36 @@ import axios from 'axios'
           console.log(error);
         })
       },
-      editItem (item) {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialog = true
-      },
-
-      deleteItem (item) {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialogDelete = true
-      },
-
-      deleteItemConfirm () {
-        this.desserts.splice(this.editedIndex, 1)
-        this.closeDelete()
+      activarDesactivarItem (accion , item) {
+        let id = item._id;
+        console.log(accion);
+        if(accion == 2){
+          console.log(id);
+          let me = this
+          let header = {headers:{"token" : this.$store.state.token}};
+          axios.put(`usuario/desactivar/${id}`,
+          {estado:0},
+          header)
+          .then(function(){
+            me.obtenerUsuarios();
+          })
+          .catch(function(error){
+            console.log(error);
+          });
+        }else if (accion==1){
+          console.log(id);
+          let me = this
+          let header = {headers:{"token" : this.$store.state.token}};
+          axios.put(`usuario/activar/${id}`,
+          {estado:1},
+          header)
+          .then(function(){
+            me.obtenerUsuarios();
+          })
+          .catch(function(error){
+            console.log(error);
+          });
+        }
       },
 
       close () {
