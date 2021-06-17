@@ -13,7 +13,7 @@
                     :append-icon="mostrarContraseña ? 'mdi-eye' : 'mdi-eye-off'"
                     @click:append="mostrarContraseña =! mostrarContraseña"/>
           </v-card-text>
-          <div v-if="mensajeError==true" class="flex red--text"> Usuario/Contraseña invalido </div>
+          <div v-if="mensajeError==true" class="flex red--text">{{respuestaMala}} </div>
           <v-divider></v-divider>
           <v-card-actions>
             <v-btn to="/registrarse" color="success">Registrarse</v-btn>
@@ -39,24 +39,23 @@
 
 <script>
   import axios from "axios"
-
   export default {
     data() {
       return {
         mostrarContraseña:false,
           email:"",
           pass:"",
+          respuestaMala:"",
           mensajeError:false
       }
     },
-
     methods:{
       login(){
         axios.post("usuario/login",{email:this.email, password:this.pass})
-        //axios.post("usuario/login",{email:this.email, password:this.pass})
         .then(response =>{
           console.log(response);
           this.$store.dispatch("setToken", response.data.token);
+          this.$store.dispatch("setRol", response.data.usuario.rol);
           this.$router.push("/venta");
           console.log("setToken" + response.data.token);
           return console.log(this.$store);
@@ -64,6 +63,7 @@
           //return console.log(response);
         }).catch((error)=>{
           this.mensajeError=true
+          this.respuestaMala = error.response.data.msg
           console.log(error.response.data.msg);
         })
       } 
