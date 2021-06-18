@@ -41,6 +41,13 @@
             >
               Nueva Venta
             </v-btn>
+            <v-icon
+                medium
+                class="mr-4"
+                @click="crearPDF()"
+              >
+                 mdi-{{icons[3]}}
+              </v-icon>
           </template>
         <v-card width="500" class="mx-auto mt-9">
           <v-col>
@@ -202,9 +209,11 @@
 
 <script>
 import axios from 'axios'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
   export default {
     data: () => ({      
-      icons: ['pencil','delete'],
+      icons: ['pencil','check','block-helper','download'],
       drawer:false,
       search: '',
 
@@ -381,6 +390,39 @@ import axios from 'axios'
         this.editedItem.descuento=''
         this.editedItem.total=''
       },
+      crearPDF(){
+        var columns =[
+          {tittle:"Detalles",dataKey:"detalles"},
+          {tittle:"Persona",dataKey:"persona"},
+          {tittle:"TipoComprobante",dataKey:"tipoComprobante"},
+          {tittle:"SerieComprobante",dataKey:"serieComprobante"},
+          {tittle:"NúmeroComprobante",dataKey:"numComprobante"},
+          {tittle:"Impusto",dataKey:"impuesto"},
+          {tittle:"CreatedAt",dataKey:"createdAt"},
+          {tittle:"Total",dataKey:"total"},
+        ];
+        var rows=[];
+        this.ventas.map(function(x){
+          rows.push({
+            detalles: x.detalles,
+            persona: x.persona,
+            tipoComprobante: x.tipoComprobante,
+            serieComprobante: x.serieComprobante,
+            numComprobante: x.numComprobante,
+            impuesto: x.impuesto,
+            createdAt: x.createdAt,
+            total: x.total
+          });
+        });
+        var doc = new jsPDF("p","pt");
+        doc.autoTable(columns, rows,{
+          margin:{top:60},
+          addPageContent:function(){
+            doc.text("Lista de Ventas",40,30);
+          },
+        });
+        doc.save("Ventas.pdf");
+      }
     },
   }
 </script>

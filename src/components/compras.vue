@@ -5,6 +5,7 @@
   <v-data-table class="mx-auto mt-5 elevation-15" max-width="900"
     :headers="columnas"
     :items="compras"
+    :objetos="personas"
     :search="search"
     sort-by="calories"
   >
@@ -42,6 +43,13 @@
             >
               Añadir
             </v-btn>
+            <v-icon
+                medium
+                class="mr-4"
+                @click="crearPDF()"
+              >
+                 mdi-{{icons[3]}}
+              </v-icon>
           </template>
          <v-card width="500" class="mx-auto mt-9">
             <div>
@@ -204,9 +212,11 @@
 
 <script>
 import axios from 'axios'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
   export default {
     data: () => ({      
-      icons: ['pencil','check','block-helper'],
+      icons: ['pencil','check','block-helper','download'],
       drawer:false,
       search: '',
       bd:0,
@@ -214,7 +224,7 @@ import axios from 'axios'
       dialogDelete: false,
       columnas: [
         { text: 'Usuario', value: 'usuario' },
-        { text: 'Cliente', value: 'persona' },
+        { text: 'Cliente', value: 'nombre' },
         { text: 'Tipo Comprobante', value: 'tipoComprobante' },
         { text: 'Serie Comprobante', value: 'serieComprobante' },
         { text: 'Número Comprobante', value: 'numComprobante' },
@@ -223,9 +233,15 @@ import axios from 'axios'
         { text: 'Fecha', value: 'createdAt' },
         { text: 'Actions', value: 'actions', sortable: false }
       ],
+        personas:[
+          {nombre:''}
+        ],
+        usuarios:[
+          {}
+        ],
       compras: [
         {
-        usuario:'',
+        nombre:'',
         persona:'',
         tipoComprobante:'',
         serieComprobante:'',
@@ -261,8 +277,32 @@ import axios from 'axios'
     }),
     created(){
       this.obtenerCompras();
+      this.obtenerPersonas();
+      this.obtenerUsuarios();
     },
     methods: {
+       obtenerPersonas(){
+        let header = {headers:{"token" : this.$store.state.token}};
+        axios.get("persona",header)
+        .then(response =>{
+          console.log(response.data);
+          this.compras = response.data.persona
+        })
+        .catch((error) =>{
+          console.log(error.response);
+        })
+      },
+      obtenerUsuarios(){
+        let header = {headers:{"token" : this.$store.state.token}};
+        axios.get("usuario",header)
+        .then(response =>{
+          console.log(response.data);
+          this.usuarios = response.data.usuarios
+        })
+        .catch((error) =>{
+          console.log(error.response);
+        })
+      },
       obtenerCompras(){
         let header = {headers:{"token" : this.$store.state.token}};
         axios.get("compra",header)
@@ -381,6 +421,41 @@ import axios from 'axios'
         this.editedItem.total='';
         this.editedItem.detalles=''
       },
+      crearPDF(){
+        var columns =[
+          {tittle:"Usuario",dataKey:"usuario"},
+          {tittle:"Detalles",dataKey:"detalles"},
+          {tittle:"Persona",dataKey:"persona"},
+          {tittle:"TipoComprobante",dataKey:"tipoComprobante"},
+          {tittle:"SerieComprobante",dataKey:"serieComprobante"},
+          {tittle:"NúmeroComprobante",dataKey:"numComprobante"},
+          {tittle:"Impusto",dataKey:"impuesto"},
+          {tittle:"CreatedAt",dataKey:"createdAt"},
+          {tittle:"Total",dataKey:"total"},
+        ];
+        var rows=[];
+        this.compras.map(function(x){
+          rows.push({
+            usuario: x.usuario,
+            detalles: x.detalles,
+            persona: x.persona,
+            tipoComprobante: x.tipoComprobante,
+            serieComprobante: x.serieComprobante,
+            numComprobante: x.numComprobante,
+            impuesto: x.impuesto,
+            createdAt: x.createdAt,
+            total: x.total
+          });
+        });
+        var doc = new jsPDF("p","pt");
+        doc.autoTable(columns, rows,{
+          margin:{top:60},
+          addPageContent:function(){
+            doc.text("Lista de Compras",40,30);
+          },
+        });
+        doc.save("Compras.pdf");
+      }
     },
   }
 </script>

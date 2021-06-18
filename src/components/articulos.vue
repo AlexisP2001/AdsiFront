@@ -4,7 +4,7 @@
       <template>
   <v-data-table class="mx-auto mt-5 elevation-15" max-width="900"
     :headers="columnas"
-    :objetos="objetos"
+    :objetos="categorias"
     :items="articulos"
     :search="search"
     sort-by="calories"
@@ -32,7 +32,7 @@
           v-model="dialog"
           max-width="500px"
         >
-          <template v-slot:activator="{ on, attrs }">
+          <template v-slot:activator="{ on, attrs }">            
             <v-btn
               color="primary"
               dark
@@ -42,6 +42,13 @@
             >
               Añadir
             </v-btn>
+            <v-icon
+                medium
+                class="mr-4"
+                @click="crearPDF()"
+              >
+                 mdi-{{icons[3]}}
+              </v-icon>
           </template>
         <v-card width="500" class="mx-auto mt-9">
             <div>
@@ -53,7 +60,7 @@
   >
         <v-col cols="12">
           <v-select
-          :items="objetos"
+          :items="categorias.nombre"
           label="Categoria"
         ></v-select>
         </v-col>
@@ -153,36 +160,36 @@
 
 <script>
 import axios from 'axios'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
   export default {
     data: () => ({     
-      icons: ['pencil','check','block-helper'],
+      icons: ['pencil','check','block-helper','download'],
       drawer:false,
       search: '',
       bd:0,
       dialog: false,
       dialogDelete: false,
       columnas: [
-        { text: 'Categoria', value: 'categoria' },
+        { text: 'Categoria', value: 'createdAt'},
         { text: 'Codigo', value: 'codigo' },
         { text: 'Nombre', value: 'nombre' },
         { text: 'Descripcion', value: 'descripcion' },
-        { text: 'Precio', value: 'precioventa' },
+        { text: 'Precio', value: 'precio' },
         { text: 'Stock', value: 'stock' },
         { text: 'Estado', value: 'estado' },
         { text: 'Actions', value: 'actions', sortable: false }
       ],
-      // categorias:[
-      //   categoria=''
-      // ],
-      objetos:[
-      {
-        nombre:''
-      }],
+      categorias: [
+        {
+        createdAt:''
+        }
+      ],
       articulos: [
         {
-        categoria:'',
+        // nombreCategoria:'',
         codigo:'',
-        precioventa:'',
+        precio:'',
         stock:'',
         nombre:'',
         estado:'',
@@ -192,7 +199,7 @@ import axios from 'axios'
       editedItem: {
         categoria:'',
         estado:'',
-        precioventa:'',
+        precio:'',
         codigo:'',
         stock:'',
         nombre:'',
@@ -201,7 +208,7 @@ import axios from 'axios'
       defaultItem: {
         categoria:'',
         estado:'',
-        precioventa:'',
+        precio:'',
         codigo:'',
         stock:'',
         nombre:'',
@@ -217,8 +224,8 @@ import axios from 'axios'
         let header = {headers:{"token" : this.$store.state.token}};
         axios.get("categoria",header)
         .then(response =>{
-          console.log(response.data.categoria.nombre);
-          this.articulos.categoria = response.data.categoria.nombre
+          this.categorias = response.data.categoria
+          console.log(this.categorias);
         })
         .catch((error) =>{
           console.log(error.response);
@@ -274,7 +281,7 @@ import axios from 'axios'
           const me = this;
           axios.post('articulo',{
             nombre:this.editedItem.nombre,
-            precioventa:this.editedItem.precioventa,
+            precioventa:this.editedItem.precio,
             codigo:this.editedItem.codigo,
             stock:this.editedItem.stock,
             descripcion:this.editedItem.descripcion
@@ -295,7 +302,7 @@ import axios from 'axios'
           const me = this;
           axios.put(`articulo/${this.id}`,{
             nombre:this.editedItem.nombre,
-            precioventa:this.editedItem.precioventa,
+            precioventa:this.editedItem.precio,
             codigo:this.editedItem.codigo,
             stock:this.editedItem.stock,
             descripcion:this.editedItem.descripcion
@@ -317,7 +324,7 @@ import axios from 'axios'
         this.bd = 1;
         this.id= item._id;
         this.editedItem.nombre=item.nombre;
-        this.editedItem.precioventa=item.precioventa
+        this.editedItem.precio=item.precio
         this.editedItem.descripcion=item.descripcion
         this.editedItem.codigo=item.codigo
         this.editedItem.stock=item.stock
@@ -326,10 +333,41 @@ import axios from 'axios'
       reset(){
         this.editedItem.codigo='',
         this.editedItem.nombre=''
-        this.editedItem.precioventa=''
+        this.editedItem.precio=''
         this.editedItem.stock=''
         this.editedItem.descripcion=''
       },
+      crearPDF(){
+        var columns =[
+          {tittle:"Categoria",dataKey:"categoria"},
+          {tittle:"Codigo",dataKey:"codigo"},
+          {tittle:"Nombre",dataKey:"nombre"},
+          {tittle:"Descripcion",dataKey:"descripcion"},
+          {tittle:"Precio",dataKey:"precio"},
+          {tittle:"Stock",dataKey:"stock"},
+          {tittle:"Estado",dataKey:"estado"},
+        ];
+        var rows=[];
+        this.articulos.map(function(x){
+          rows.push({
+            categoria: x.categoria,
+            codigo: x.codigo,
+            nombre: x.nombre,
+            descripcion: x.descripcion,
+            precio: x.precio,
+            stock: x.stock,
+            estado: x.estado
+          });
+        });
+        var doc = new jsPDF("p","pt");
+        doc.autoTable(columns, rows,{
+          margin:{top:60},
+          addPageContent:function(){
+            doc.text("Lista de Articulos",40,30);
+          },
+        });
+        doc.save("Articulos.pdf");
+      }
     },
   }
 </script>

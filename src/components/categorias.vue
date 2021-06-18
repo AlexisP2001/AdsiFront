@@ -41,6 +41,13 @@
             >
               Añadir
             </v-btn>
+            <v-icon
+                medium
+                class="mr-4"
+                @click="crearPDF()"
+              >
+                 mdi-{{icons[3]}}
+              </v-icon>
           </template>
         <v-card width="500" class="mx-auto mt-9">
   <v-card-text>
@@ -123,9 +130,11 @@
 
 <script>
 import axios from 'axios'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
   export default {
     data: () => ({      
-      icons: ['pencil','check','block-helper'],
+      icons: ['pencil','check','block-helper','download'],
       drawer:false,
       search: '',
       bd:0,
@@ -254,6 +263,29 @@ import axios from 'axios'
         this.editedItem.nombre=''
         this.editedItem.descripcion=''
       },
+      crearPDF(){
+        var columns =[
+          {tittle:"Nombre",dataKey:"nombre"},
+          {tittle:"Descripcion",dataKey:"descripcion"},
+          {tittle:"Estado",dataKey:"estado"},
+        ];
+        var rows=[];
+        this.categorias.map(function(x){
+          rows.push({
+            nombre: x.nombre,
+            descripcion: x.descripcion,
+            estado: x.estado
+          });
+        });
+        var doc = new jsPDF("p","pt");
+        doc.autoTable(columns, rows,{
+          margin:{top:60},
+          addPageContent:function(){
+            doc.text("Lista de Categorias",40,30);
+          },
+        });
+        doc.save("Categorias.pdf");
+      }
     },
   }
 </script>

@@ -42,6 +42,13 @@
             >
               Añadir
             </v-btn>
+            <v-icon
+                medium
+                class="mr-4"
+                @click="crearPDF()"
+              >
+                 mdi-{{icons[3]}}
+              </v-icon>
           </template>
           <v-card width="500" class="mx-auto mt-9">
             <div>
@@ -147,12 +154,14 @@
 
 <script>
 import axios from 'axios'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
   export default {
     data: () => ({   
       items: ['ALMACENISTA_ROL', 'VENDEDOR_ROL', 'ADMIN_ROL'],
       value: null,
       mostrarContraseña:false,
-      icons: ['pencil','check','block-helper'],
+      icons: ['pencil','check','block-helper','download'],
       drawer:false,
       search: '',
       dialog: false,
@@ -192,21 +201,6 @@ import axios from 'axios'
     }),
     created(){
       this.obtenerUsuarios();
-    },
-
-    computed: {
-      formTitle () {
-        return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-      },
-    },
-
-    watch: {
-      dialog (val) {
-        val || this.close()
-      },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
     },
     methods: {
       obtenerUsuarios(){
@@ -310,21 +304,33 @@ import axios from 'axios'
         this.editedItem.password=''
       },
 
-      close () {
-        this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-      closeDelete () {
-        this.dialogDelete = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
+      crearPDF(){
+        var columns =[
+          {tittle:"Nombre",dataKey:"nombre"},
+          {tittle:"E-mail",dataKey:"email"},
+          {tittle:"Contraseña",dataKey:"password"},
+          {tittle:"Rol",dataKey:"rol"},
+          {tittle:"Estado",dataKey:"estado"},
+        ];
+        var rows=[];
+        this.usuarios.map(function(x){
+          rows.push({
+            nombre: x.nombre,
+            email: x.email,
+            password: x.password,
+            rol: x.rol,
+            estado: x.estado
+          });
+        });
+        var doc = new jsPDF("p","pt");
+        doc.autoTable(columns, rows,{
+          margin:{top:60},
+          addPageContent:function(){
+            doc.text("Lista de Usuarios",40,30);
+          },
+        });
+        doc.save("Usuarios.pdf");
+      }
     },
   }
 </script>

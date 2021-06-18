@@ -41,6 +41,13 @@
             >
               Añadir
             </v-btn>
+            <v-icon
+                medium
+                class="mr-4"
+                @click="crearPDF()"
+              >
+                 mdi-{{icons[3]}}
+              </v-icon>
           </template>
          <v-card width="500" class="mx-auto mt-9">
   <v-card-text>
@@ -150,10 +157,12 @@
 
 <script>
 import axios from 'axios'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
   export default {
     data: () => ({      
       items: ['Proveedor', 'Cliente'],
-      icons: ['pencil','check','block-helper'],
+      icons: ['pencil','check','block-helper','download'],
       drawer:false,
       search: '',
       bd:0,
@@ -320,22 +329,39 @@ import axios from 'axios'
         this.editedItem.telefono=''
         this.editedItem.email=''
       },
-
-      close () {
-        this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-      closeDelete () {
-        this.dialogDelete = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
+      crearPDF(){
+        var columns =[
+          {tittle:"Tipo",dataKey:"tipo"},
+          {tittle:"Nombre",dataKey:"nombre"},
+          {tittle:"TipoDocumento",dataKey:"tipoDocumento"},
+          {tittle:"NúmeroDocumento",dataKey:"numDocumento"},
+          {tittle:"Direccion",dataKey:"direccion"},
+          {tittle:"Telefono",dataKey:"telefono"},
+          {tittle:"Estado",dataKey:"estado"},
+          {tittle:"E-mail",dataKey:"email"},
+        ];
+        var rows=[];
+        this.personas.map(function(x){
+          rows.push({
+            tipoPersona: x.tipoPersona,
+            nombre: x.nombre,
+            tipoDocumento: x.tipoDocumento,
+            numDocumento: x.numDocumento,
+            direccion: x.direccion,
+            telefono: x.telefono,
+            email: x.email,
+            estado: x.estado
+          });
+        });
+        var doc = new jsPDF("p","pt");
+        doc.autoTable(columns, rows,{
+          margin:{top:60},
+          addPageContent:function(){
+            doc.text("Lista de Personas",40,30);
+          },
+        });
+        doc.save("Personas.pdf");
+      }
     },
   }
 </script>
