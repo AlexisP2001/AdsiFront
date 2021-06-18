@@ -33,7 +33,7 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
-              to="/crearUsuario"
+              
               color="primary"
               dark
               class="mb-2"
@@ -43,19 +43,72 @@
               Añadir
             </v-btn>
           </template>
+          <v-card width="500" class="mx-auto mt-9">
+            <div>
+            <h5 class="display-1 font-weight-medium">Nuevo Usuario</h5>
+            </div>
+        <v-form
+            ref="form"
+            lazy-validation
+  >
+        <v-col cols="12">
+          <v-autocomplete
+            v-model="editedItem.rol"
+            :items="items"
+            dense
+            filled
+            label="Seleccione Rol"
+          ></v-autocomplete>
+        </v-col>
+
+        <v-col cols="12">
+          <v-text-field 
+            v-model="editedItem.nombre" 
+            :counter="30" 
+            label="Nombre"
+            required 
+            prepend-icon="mdi-account-circle"
+        ></v-text-field>
+        </v-col>
+
+        <v-col cols="12">
+          <v-text-field
+            v-model="editedItem.email"
+            label="E-mail"
+            required
+            prepend-icon="mdi-email"
+          ></v-text-field>
+        </v-col>
+
+        <v-col cols="12">
+          <v-text-field v-model="editedItem.password"
+            label="Contraseña" 
+            :type=" mostrarContraseña ? 'text' : 'password'"
+            prepend-icon="mdi-lock"
+            :append-icon="mostrarContraseña ? 'mdi-eye' : 'mdi-eye-off'"
+            @click:append="mostrarContraseña =! mostrarContraseña"/>
+        </v-col>
+
+    
+
+        <v-card-actions>
+        <v-btn color="success" class="mr-4" @click="guardar()" >Guardar</v-btn>
+        <v-btn color="info" @click="reset"> Limpiar</v-btn>
+        <v-btn color="error" @click="dialog=false"> Cancelar</v-btn>
+
+    </v-card-actions>
+
+  </v-form>
+        </v-card>
         </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-card-title class="headline">¿Esta segudo de eliminar el usuario?</v-card-title>
-          </v-card>
-        </v-dialog>
+
       </v-toolbar>
     </template>
     <template v-slot:[`item.actions`]="{ item }">
           <v-icon
         small
         class="mr-2"
-        @click="editItem(item)"
+        @click="editar(item)"
       >
         mdi-{{icons[0]}}
       </v-icon>
@@ -95,12 +148,17 @@
 <script>
 import axios from 'axios'
   export default {
-    data: () => ({      
+    data: () => ({   
+      items: ['ALMACENISTA_ROL', 'VENDEDOR_ROL', 'ADMIN_ROL'],
+      value: null,
+      mostrarContraseña:false,
       icons: ['pencil','check','block-helper'],
       drawer:false,
       search: '',
       dialog: false,
       dialogDelete: false,
+      id:'',
+      bd: 0,
       columnas: [
         { text: 'Nombre', value: 'nombre' },
         { text: 'Email', value: 'email' },
@@ -113,6 +171,7 @@ import axios from 'axios'
         nombre:'',
         email:'',
         estado:'',
+        password:'',
         rol:''},  
       ],
       editedIndex: -1,
@@ -120,12 +179,14 @@ import axios from 'axios'
         nombre:'',
         email:'',
         estado:'',
+        password:'',
         rol:''
       },
       defaultItem: {
         nombre:'',
         email:'',
         estado:'',
+        password:'',
         rol:''
       },
     }),
@@ -159,18 +220,6 @@ import axios from 'axios'
           console.log(error.response);
         })
       },
-
-      confirmarBorrado(){
-        axios.delete('/compra/id')//+id)
-        .then(()=>{
-          this.obtenerVentas();
-          this.dialog=false;
-          this.snackbar = true
-        })
-        .catch(function(error){
-          console.log(error);
-        })
-      },
       activarDesactivarItem (accion , item) {
         let id = item._id;
         console.log(accion);
@@ -201,6 +250,64 @@ import axios from 'axios'
             console.log(error);
           });
         }
+      },
+      guardar(){
+        if (this.bd == 0 ){
+          console.log('estoy guardando'+this.bd);
+          let header = {headers:{"token" : this.$store.state.token}};
+          const me = this;
+          axios.post('usuario',{
+            nombre:this.editedItem.nombre,
+            email:this.editedItem.email,
+            rol:this.editedItem.rol,
+            password:this.editedItem.password
+            },
+            header
+            )
+            .then((response)=>{
+              console.log(response);
+              me.obtenerUsuarios(),
+              this.limpiar
+            })
+            .catch((error)=>{
+              console.log(error.response);
+            })
+        }else{
+          console.log('estoy enviando'+this.bd);
+          let header = {headers:{"token" : this.$store.state.token}};
+          const me = this;
+          axios.put(`usuario/${this.id}`,{
+            nombre:this.editedItem.nombre,
+            email:this.editedItem.email,
+            rol:this.editedItem.rol,
+            password:this.editedItem.password
+            },
+            header
+            )
+            .then((response)=>{
+              console.log(response);
+              me.obtenerUsuarios(),
+              this.limpiar
+            })
+            .catch((error)=>{
+              console.log(error.response);
+            })
+        }
+      },
+      editar(item){
+        console.log(item);
+        this.bd = 1;
+        this.id= item._id;
+        this.editedItem.nombre=item.nombre;
+        this.editedItem.email=item.email
+        this.editedItem.rol=item.rol
+        this.dialog=true;
+      },
+      reset(){
+        this.editedItem.rol='null',
+        this.editedItem.nombre=''
+        this.editedItem.email=''
+        this.editedItem.password=''
       },
 
       close () {

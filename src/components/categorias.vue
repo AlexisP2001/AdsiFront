@@ -33,7 +33,6 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
-              to="/crearCategoria"
               color="primary"
               dark
               class="mb-2"
@@ -43,17 +42,41 @@
               Añadir
             </v-btn>
           </template>
-        </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-card-title class="headline">¿Esta segudo de eliminar la categoria?</v-card-title>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="closeDelete">Cancelar</v-btn>
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm">Confirmar</v-btn>
-              <v-spacer></v-spacer>
-            </v-card-actions>
-          </v-card>
+        <v-card width="500" class="mx-auto mt-9">
+  <v-card-text>
+    <v-text-field
+      v-model="editedItem.nombre"
+      :counter="20"
+      label="Nombre"
+      required
+    ></v-text-field>
+    <v-text-field
+      v-model="editedItem.descripcion"
+      label="Descripcion"
+      required
+    ></v-text-field>
+    <v-btn
+      color="success"
+      class="mr-4"
+      @click="guardar"
+    >
+      Guardar
+    </v-btn>
+    <v-btn 
+    color="info"
+    class="mr-4"
+    @click="reset">
+      Limpiar
+    </v-btn>
+
+    <v-btn 
+    color="error"
+    class="mr-4"
+    @click="dialog=false">
+      Cancelar
+    </v-btn>
+  </v-card-text>    
+</v-card>
         </v-dialog>
       </v-toolbar>
     </template>
@@ -61,7 +84,7 @@
           <v-icon
         small
         class="mr-2"
-        @click="editItem(item)"
+        @click="editar(item)"
       >
         mdi-{{icons[0]}}
       </v-icon>
@@ -105,7 +128,7 @@ import axios from 'axios'
       icons: ['pencil','check','block-helper'],
       drawer:false,
       search: '',
-
+      bd:0,
       dialog: false,
       dialogDelete: false,
       columnas: [
@@ -133,21 +156,6 @@ import axios from 'axios'
     }),
     created(){
       this.obtenerCategorias();
-    },
-
-    computed: {
-      formTitle () {
-        return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-      },
-    },
-
-    watch: {
-      dialog (val) {
-        val || this.close()
-      },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
     },
     methods: {
       obtenerCategorias(){
@@ -194,20 +202,57 @@ import axios from 'axios'
         }
       },
 
-      close () {
-        this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
+      guardar(){
+        if (this.bd == 0 ){
+          console.log('estoy guardando'+this.bd);
+          let header = {headers:{"token" : this.$store.state.token}};
+          const me = this;
+          axios.post('categoria',{
+            nombre:this.editedItem.nombre,
+            descripcion:this.editedItem.descripcion,
+            },
+            header
+            )
+            .then((response)=>{
+              console.log(response);
+              me.obtenerCategorias(),
+              this.limpiar
+            })
+            .catch((error)=>{
+              console.log(error.response);
+            })
+        }else{
+          console.log('estoy enviando'+this.bd);
+          let header = {headers:{"token" : this.$store.state.token}};
+          const me = this;
+          axios.put(`categoria/${this.id}`,{
+            nombre:this.editedItem.nombre,
+            descripcion:this.editedItem.descripcion,
+            },
+            header
+            )
+            .then((response)=>{
+              console.log(response);
+              me.obtenerCategorias(),
+              this.limpiar
+            })
+            .catch((error)=>{
+              console.log(error.response);
+            })
+        }
       },
-
-      closeDelete () {
-        this.dialogDelete = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
+      editar(item){
+        console.log(item);
+        this.bd = 1;
+        this.id= item._id;
+        this.editedItem.nombre=item.nombre;
+        this.editedItem.email=item.email
+        this.editedItem.rol=item.rol
+        this.dialog=true;
+      },
+      reset(){
+        this.editedItem.nombre=''
+        this.editedItem.descripcion=''
       },
     },
   }

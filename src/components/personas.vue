@@ -33,7 +33,6 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
-              to="/crearPersona"
               color="primary"
               dark
               class="mb-2"
@@ -43,6 +42,68 @@
               Añadir
             </v-btn>
           </template>
+         <v-card width="500" class="mx-auto mt-9">
+  <v-card-text>
+    <v-autocomplete
+      v-model="editedItem.tipoPersona"
+      :items="items"
+      dense
+      filled
+      label="Seleccione Tipo"
+    ></v-autocomplete>
+    <v-text-field
+      v-model="editedItem.nombre"
+      :counter="20"
+      label="Nombre"
+      required
+    ></v-text-field>
+    <v-text-field
+      v-model="editedItem.tipoDocumento"
+      label="Tipo de Documento"
+      required
+    ></v-text-field>
+    <v-text-field
+      v-model="editedItem.numDocumento"
+      label="Número de Documento"
+      required
+    ></v-text-field>
+    <v-text-field
+      v-model="editedItem.direccion"
+      label="Dirección"
+      required
+    ></v-text-field>
+    <v-text-field
+      v-model="editedItem.telefono"
+      label="Telefono"
+      required
+    ></v-text-field>
+    <v-text-field
+      v-model="editedItem.email"
+      label="Email"
+      required
+    ></v-text-field>
+    <v-btn
+      color="success"
+      class="mr-4"
+      @click="guardar"
+    >
+      Guardar
+    </v-btn>
+    <v-btn 
+    color="info"
+    class="mr-4"
+    @click="reset">
+      Limpiar
+    </v-btn>
+
+    <v-btn 
+    color="error"
+    class="mr-4"
+    @click="dialog=false">
+      Cancelar
+    </v-btn>
+  </v-card-text>    
+</v-card>
         </v-dialog>
       </v-toolbar>
     </template>
@@ -50,7 +111,7 @@
           <v-icon
         small
         class="mr-2"
-        @click="editItem(item)"
+        @click="editar(item)"
       >
         mdi-{{icons[0]}}
       </v-icon>
@@ -91,10 +152,11 @@
 import axios from 'axios'
   export default {
     data: () => ({      
+      items: ['Proveedor', 'Cliente'],
       icons: ['pencil','check','block-helper'],
       drawer:false,
       search: '',
-
+      bd:0,
       dialog: false,
       dialogDelete: false,
       columnas: [
@@ -144,28 +206,13 @@ import axios from 'axios'
     created(){
       this.obtenerPersonas();
     },
-
-    computed: {
-      formTitle () {
-        return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-      },
-    },
-
-    watch: {
-      dialog (val) {
-        val || this.close()
-      },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
-    },
     methods: {
       obtenerPersonas(){
         let header = {headers:{"token" : this.$store.state.token}};
-        axios.get("personas",header)
+        axios.get("persona",header)
         .then(response =>{
           console.log(response.data);
-          this.personas = response.data.personas
+          this.personas = response.data.persona
         })
         .catch((error) =>{
           console.log(error.response);
@@ -178,7 +225,7 @@ import axios from 'axios'
           console.log(id);
           let me = this
           let header = {headers:{"token" : this.$store.state.token}};
-          axios.put(`personas/desactivar/${id}`,
+          axios.put(`persona/desactivar/${id}`,
           {estado:0},
           header)
           .then(function(){
@@ -191,7 +238,7 @@ import axios from 'axios'
           console.log(id);
           let me = this
           let header = {headers:{"token" : this.$store.state.token}};
-          axios.put(`personas/activar/${id}`,
+          axios.put(`persona/activar/${id}`,
           {estado:1},
           header)
           .then(function(){
@@ -201,6 +248,77 @@ import axios from 'axios'
             console.log(error);
           });
         }
+      },
+      guardar(){
+        if (this.bd == 0 ){
+          console.log('estoy guardando'+this.bd);
+          let header = {headers:{"token" : this.$store.state.token}};
+          const me = this;
+          axios.post('persona',{
+            nombre:this.editedItem.nombre,
+            tipoPersona:this.editedItem.tipoPersona,
+            tipoDocumento:this.editedItem.tipoDocumento,
+            numDocumento:this.editedItem.nombre,
+            direccion:this.editedItem.direccion,
+            telefono:this.editedItem.telefono,
+            email:this.editedItem.email,
+            },
+            header
+            )
+            .then((response)=>{
+              console.log(response);
+              me.obtenerPersonas(),
+              this.limpiar
+            })
+            .catch((error)=>{
+              console.log(error.response);
+            })
+        }else{
+          console.log('estoy enviando'+this.bd);
+          let header = {headers:{"token" : this.$store.state.token}};
+          const me = this;
+          axios.put(`persona/${this.id}`,{
+            nombre:this.editedItem.nombre,
+            tipoPersona:this.editedItem.tipoPersona,
+            tipoDocumento:this.editedItem.tipoDocumento,
+            numDocumento:this.editedItem.nombre,
+            direccion:this.editedItem.direccion,
+            telefono:this.editedItem.telefono,
+            email:this.editedItem.email,
+            },
+            header
+            )
+            .then((response)=>{
+              console.log(response);
+              me.obtenerPersonas(),
+              this.limpiar
+            })
+            .catch((error)=>{
+              console.log(error.response);
+            })
+        }
+      },
+      editar(item){
+        console.log(item);
+        this.bd = 1;
+        this.id= item._id;
+        this.editedItem.nombre=item.nombre;
+        this.editedItem.tipoPersona=item.tipoPersona
+        this.editedItem.tipoDocumento=item.tipoDocumento
+        this.editedItem.numDocumento=item.numDocumento
+        this.editedItem.direccion=item.direccion
+        this.editedItem.telefono=item.telefono
+        this.editedItem.email=item.email
+        this.dialog=true;
+      },
+      reset(){
+        this.editedItem.nombre=''
+        this.editedItem.tipoPersona='',
+        this.editedItem.tipoDocumento=''
+        this.editedItem.numDocumento=''
+        this.editedItem.direccion=''
+        this.editedItem.telefono=''
+        this.editedItem.email=''
       },
 
       close () {

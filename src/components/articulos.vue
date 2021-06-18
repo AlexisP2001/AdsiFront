@@ -4,6 +4,7 @@
       <template>
   <v-data-table class="mx-auto mt-5 elevation-15" max-width="900"
     :headers="columnas"
+    :objetos="objetos"
     :items="articulos"
     :search="search"
     sort-by="calories"
@@ -33,7 +34,6 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
-              to="/crearArticulo"
               color="primary"
               dark
               class="mb-2"
@@ -43,17 +43,70 @@
               Añadir
             </v-btn>
           </template>
-        </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-card-title class="headline">¿Esta segudo de eliminar el articulo?</v-card-title>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="closeDelete">Cancelar</v-btn>
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm">Confirmar</v-btn>
-              <v-spacer></v-spacer>
-            </v-card-actions>
-          </v-card>
+        <v-card width="500" class="mx-auto mt-9">
+            <div>
+            <h2 class="font-weight-medium">Nuevo Articulo</h2>
+            </div>
+        <v-form
+            ref="form"
+            lazy-validation
+  >
+        <v-col cols="12">
+          <v-select
+          :items="objetos"
+          label="Categoria"
+        ></v-select>
+        </v-col>
+        
+        <v-col cols="12">
+          <v-text-field
+            v-model="editedItem.codigo"
+            label="Codigo"
+            required
+          ></v-text-field>
+        </v-col>
+
+        <v-col cols="12">
+          <v-text-field 
+            v-model="editedItem.nombre" 
+            :counter="30" 
+            label="Nombre"
+            required 
+        ></v-text-field>
+        </v-col>     
+        <v-col cols="12">
+          <v-text-field 
+            v-model="editedItem.descripcion"
+            label="Descripción"
+            required
+        ></v-text-field>
+        </v-col>
+        <v-col cols="12">
+          <v-text-field 
+            v-model="editedItem.precio"
+            label="Precio"
+            required
+        ></v-text-field>
+        </v-col>
+        <v-col cols="12">
+          <v-text-field 
+            v-model="editedItem.stock"
+            label="Stock"
+            required
+        ></v-text-field>
+        </v-col>
+
+    
+
+        <v-card-actions>
+        <v-btn color="success" class="mr-4" @click="guardar()" >Guardar</v-btn>
+        <v-btn color="info" @click="reset"> Limpiar</v-btn>
+        <v-btn color="error" @click="dialog=false"> Cancelar</v-btn>
+
+    </v-card-actions>
+
+  </v-form>
+        </v-card>
         </v-dialog>
       </v-toolbar>
     </template>
@@ -61,7 +114,7 @@
           <v-icon
         small
         class="mr-2"
-        @click="editItem(item)"
+        @click="editar(item)"
       >
         mdi-{{icons[0]}}
       </v-icon>
@@ -101,15 +154,15 @@
 <script>
 import axios from 'axios'
   export default {
-    data: () => ({      
+    data: () => ({     
       icons: ['pencil','check','block-helper'],
       drawer:false,
       search: '',
-
+      bd:0,
       dialog: false,
       dialogDelete: false,
       columnas: [
-        // { text: 'Categoria', value: 'categoria' },
+        { text: 'Categoria', value: 'categoria' },
         { text: 'Codigo', value: 'codigo' },
         { text: 'Nombre', value: 'nombre' },
         { text: 'Descripcion', value: 'descripcion' },
@@ -118,8 +171,16 @@ import axios from 'axios'
         { text: 'Estado', value: 'estado' },
         { text: 'Actions', value: 'actions', sortable: false }
       ],
+      // categorias:[
+      //   categoria=''
+      // ],
+      objetos:[
+      {
+        nombre:''
+      }],
       articulos: [
-        {categoria:'',
+        {
+        categoria:'',
         codigo:'',
         precioventa:'',
         stock:'',
@@ -149,23 +210,20 @@ import axios from 'axios'
     }),
     created(){
       this.obtenerArticulos();
-    },
-
-    computed: {
-      formTitle () {
-        return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-      },
-    },
-
-    watch: {
-      dialog (val) {
-        val || this.close()
-      },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
+      this.listarCategorias();
     },
     methods: {
+      listarCategorias(){
+        let header = {headers:{"token" : this.$store.state.token}};
+        axios.get("categoria",header)
+        .then(response =>{
+          console.log(response.data.categoria.nombre);
+          this.articulos.categoria = response.data.categoria.nombre
+        })
+        .catch((error) =>{
+          console.log(error.response);
+        })
+      },
       obtenerArticulos(){
         let header = {headers:{"token" : this.$store.state.token}};
         axios.get("articulo",header)
@@ -209,20 +267,68 @@ import axios from 'axios'
         }
       },
 
-      close () {
-        this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
+      guardar(){
+        if (this.bd == 0 ){
+          console.log('estoy guardando'+this.bd);
+          let header = {headers:{"token" : this.$store.state.token}};
+          const me = this;
+          axios.post('articulo',{
+            nombre:this.editedItem.nombre,
+            precioventa:this.editedItem.precioventa,
+            codigo:this.editedItem.codigo,
+            stock:this.editedItem.stock,
+            descripcion:this.editedItem.descripcion
+            },
+            header
+            )
+            .then((response)=>{
+              console.log(response);
+              me.obtenerArticulos(),
+              this.limpiar
+            })
+            .catch((error)=>{
+              console.log(error.response);
+            })
+        }else{
+          console.log('estoy enviando'+this.bd);
+          let header = {headers:{"token" : this.$store.state.token}};
+          const me = this;
+          axios.put(`articulo/${this.id}`,{
+            nombre:this.editedItem.nombre,
+            precioventa:this.editedItem.precioventa,
+            codigo:this.editedItem.codigo,
+            stock:this.editedItem.stock,
+            descripcion:this.editedItem.descripcion
+            },
+            header
+            )
+            .then((response)=>{
+              console.log(response);
+              me.obtenerArticulos(),
+              this.limpiar
+            })
+            .catch((error)=>{
+              console.log(error.response);
+            })
+        }
       },
-
-      closeDelete () {
-        this.dialogDelete = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
+      editar(item){
+        console.log(item);
+        this.bd = 1;
+        this.id= item._id;
+        this.editedItem.nombre=item.nombre;
+        this.editedItem.precioventa=item.precioventa
+        this.editedItem.descripcion=item.descripcion
+        this.editedItem.codigo=item.codigo
+        this.editedItem.stock=item.stock
+        this.dialog=true;
+      },
+      reset(){
+        this.editedItem.codigo='',
+        this.editedItem.nombre=''
+        this.editedItem.precioventa=''
+        this.editedItem.stock=''
+        this.editedItem.descripcion=''
       },
     },
   }

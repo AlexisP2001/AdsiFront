@@ -43,25 +43,129 @@
               Añadir
             </v-btn>
           </template>
-        </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card>
-            <v-card-title class="headline">¿Esta segudo de eliminar la compra?</v-card-title>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="closeDelete">Cancelar</v-btn>
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm">Confirmar</v-btn>
-              <v-spacer></v-spacer>
-            </v-card-actions>
-          </v-card>
+         <v-card width="500" class="mx-auto mt-9">
+            <div>
+            <h5 class="display-1 font-weight-medium">Nuevo Usuario</h5>
+            </div>
+        <v-form
+            ref="form"
+            lazy-validation
+  >
+      <v-col>
+        <v-text-field
+          v-model="editedItem.usuario"
+          label="Usuario"
+          outlined
+          required>
+          </v-text-field>
+      </v-col>
+      <v-col>
+        <v-text-field
+          v-model="editedItem.persona"
+          label="Persona"
+          outlined
+          required>
+          </v-text-field>
+      </v-col>
+      <v-col>
+        <v-text-field
+          v-model="editedItem.tipoComprobante"
+          label="Tipo Comprobante"
+          outlined
+          required>
+          </v-text-field>
+      </v-col>
+      <v-col>
+        <v-text-field
+          v-model="editedItem.serieComprobante"
+          label="Serie comprobante"
+          outlined
+          type="number"
+          required>
+          </v-text-field>
+      </v-col>
+      <v-col>
+        <v-text-field
+          v-model="editedItem.numComprobante"
+          label="Número de comprobante"
+          outlined
+          type="number"
+          required>
+          </v-text-field>
+      </v-col>
+      <v-col>
+        <v-text-field
+          v-model="editedItem.impuesto"
+          label="Impuesto"
+          outlined
+          type="number"
+          required>
+          </v-text-field>
+      </v-col>
+      <v-col>
+        <v-text-field
+          v-model="editedItem.total"
+          label="Total"
+          outlined
+          type="number"
+          required>
+          </v-text-field>
+      </v-col>           
+      <v-col>
+        <h1>Detalles de la compra</h1>
+      </v-col>
+      <v-col>
+        <v-text-field
+          v-model="editedItem.id"
+          label="ID"
+          outlined
+          required>
+        </v-text-field>
+      </v-col>
+      <v-col>
+        <v-text-field
+          v-model="editedItem.articulo"
+          label="Articulo"
+          outlined
+          required>
+        </v-text-field>
+      </v-col>
+      <v-col>
+        <v-text-field
+          v-model="editedItem.cantidad"
+          label="Cantidad"
+          outlined
+          type="number"
+          required>
+        </v-text-field>
+      </v-col>
+      <v-col>
+        <v-text-field
+          v-model="editedItem.precio"
+          label="Precio"
+          prefix="$"
+          outlined
+          type="number"
+          required>
+        </v-text-field>
+      </v-col>
+        <v-card-actions>
+        <v-btn color="success" class="mr-4" @click="guardar()" >Guardar</v-btn>
+        <v-btn color="info" @click="reset"> Limpiar</v-btn>
+        <v-btn color="error" @click="dialog=false"> Cancelar</v-btn>
+
+    </v-card-actions>
+
+  </v-form>
+        </v-card>
         </v-dialog>
       </v-toolbar>
     </template>
-   <template v-slot:[`item.actions`]="{ item }">
+    <template v-slot:[`item.actions`]="{ item }">
           <v-icon
         small
         class="mr-2"
-        @click="editItem(item)"
+        @click="editar(item)"
       >
         mdi-{{icons[0]}}
       </v-icon>
@@ -82,7 +186,7 @@
         mdi-{{icons[1]}}
       </v-icon>
       </template>
-    </template>
+      </template>
     <!-- <template v-slot:no-data>
       <v-btn
         color="primary"
@@ -105,7 +209,7 @@ import axios from 'axios'
       icons: ['pencil','check','block-helper'],
       drawer:false,
       search: '',
-
+      bd:0,
       dialog: false,
       dialogDelete: false,
       columnas: [
@@ -127,12 +231,14 @@ import axios from 'axios'
         serieComprobante:'',
         numComprobante:'',
         impuesto:'',
+        detalles:'',
         createdAt:'',
         total:''},  
       ],
       editedIndex: -1,
       editedItem: {
         usuario:'',
+        detalles:'',
         persona:'',
         tipoComprobante:'',
         serieComprobante:'',
@@ -143,6 +249,7 @@ import axios from 'axios'
       },
       defaultItem: {
         usuario:'',
+        detalles:'',
         persona:'',
         tipoComprobante:'',
         serieComprobante:'',
@@ -155,33 +262,20 @@ import axios from 'axios'
     created(){
       this.obtenerCompras();
     },
-
-    computed: {
-      formTitle () {
-        return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-      },
-    },
-
-    watch: {
-      dialog (val) {
-        val || this.close()
-      },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
-    },
     methods: {
       obtenerCompras(){
         let header = {headers:{"token" : this.$store.state.token}};
         axios.get("compra",header)
         .then(response =>{
           console.log(response.data);
-          this.ventas = response.data.compra
+          this.compras = response.data.compra
         })
         .catch((error) =>{
           console.log(error.response);
         })
-      }, activarDesactivarItem (accion , item) {
+      },
+      
+      activarDesactivarItem (accion , item) {
         let id = item._id;
         console.log(accion);
         if(accion == 2){
@@ -212,21 +306,80 @@ import axios from 'axios'
           });
         }
       },
-
-      close () {
-        this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
+      guardar(){
+        if (this.bd == 0 ){
+          console.log('estoy guardando'+this.bd);
+          let header = {headers:{"token" : this.$store.state.token}};
+          const me = this;
+          axios.post('compra',{
+            usuario:this.editedItem.usuario,
+            persona:this.editedItem.persona,
+            tipoComprobante:this.editedItem.tipoComprobante,
+            serieComprobante:this.editedItem.serieComprobante,
+            numComprobante:this.editedItem.numComprobante,
+            impuesto:this.editedItem.impuesto,
+            total:this.editedItem.total,
+            detalles:this.editedItem.detalles,
+            },
+            header
+            )
+            .then((response)=>{
+              console.log(response);
+              me.obtenerCompras(),
+              this.limpiar
+            })
+            .catch((error)=>{
+              console.log(error.response);
+            })
+        }else{
+          console.log('estoy enviando'+this.bd);
+          let header = {headers:{"token" : this.$store.state.token}};
+          const me = this;
+          axios.put(`compra/${this.id}`,{
+            usuario:this.editedItem.usuario,
+            persona:this.editedItem.persona,
+            tipoComprobante:this.editedItem.tipoComprobante,
+            serieComprobante:this.editedItem.serieComprobante,
+            numComprobante:this.editedItem.numComprobante,
+            impuesto:this.editedItem.impuesto,
+            total:this.editedItem.total,
+            detalles:this.editedItem.detalles,
+            },
+            header
+            )
+            .then((response)=>{
+              console.log(response);
+              me.obtenerCompras(),
+              this.limpiar
+            })
+            .catch((error)=>{
+              console.log(error.response);
+            })
+        }
       },
-
-      closeDelete () {
-        this.dialogDelete = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
+      editar(item){
+        console.log(item);
+        this.bd = 1;
+        this.id= item._id;
+        this.editedItem.usuario=item.usuario;
+        this.editedItem.persona=item.persona
+        this.editedItem.tipoComprobante=item.tipoComprobante
+        this.editedItem.serieComprobante=item.serieComprobante
+        this.editedItem.numComprobante=item.numComprobante
+        this.editedItem.impuesto=item.impuesto  
+        this.editedItem.total=item.total
+        this.editedItem.detalles=item.detalles
+        this.dialog=true;
+      },
+      reset(){
+        this.editedItem.usuario='';
+        this.editedItem.persona='';
+        this.editedItem.tipoComprobante='';
+        this.editedItem.serieComprobante='';
+        this.editedItem.numComprobante='';
+        this.editedItem.impuesto='';
+        this.editedItem.total='';
+        this.editedItem.detalles=''
       },
     },
   }
